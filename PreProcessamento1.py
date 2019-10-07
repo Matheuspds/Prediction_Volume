@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[34]:
 
 
 import pandas as pd
@@ -11,6 +11,9 @@ from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import SGDRegressor
 from datetime import time
 import matplotlib.pyplot as pplot
+from sklearn.metrics import mean_squared_error
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import AdaBoostRegressor
 
 
 # In[5]:
@@ -27,14 +30,14 @@ import matplotlib.pyplot as pplot
 # weekend        int       1: Para quando for fim de semana; 0: Para quando não for fim de semana
 
 
-# In[2]:
+# In[14]:
 
 
-volume_df = pd.read_csv("dataset/volume(table 6)_training.csv")
+volume_df = pd.read_csv("dataset/volume(table 6)_test1.csv")
 volume_df.head()
 
 
-# In[3]:
+# In[15]:
 
 
 #Caracteristicas dos dados
@@ -51,25 +54,25 @@ volume_df.describe()
     #Ficou definido que sera para passageiro, sendo maior que 4 será veiculo de carga
 
 
-# In[4]:
+# In[16]:
 
 
 volume_df['vehicle_type'] = volume_df['vehicle_model'].apply(lambda x: 0 if x < 5 else 1)
 
 
-# In[5]:
+# In[17]:
 
 
 volume_df.head()
 
 
-# In[6]:
+# In[7]:
 
 
 volume_df.tail()
 
 
-# In[7]:
+# In[18]:
 
 
 #Função que será usada para obter a janela de tempo de 20 minutos
@@ -87,8 +90,11 @@ def get_timewindow(t):
         s_window = '[' + str(window[0]) + ',' + str(window[1]) + ')'
         return s_window
 
+def get_hour(t):
+        return t.hour
 
-# In[15]:
+
+# In[19]:
 
 
 #Ajustando o formato da coluna time
@@ -97,11 +103,17 @@ volume_df['time'] = pd.to_datetime(volume_df['time'], format = '%Y-%m-%d %H:%M:%
 #Adiciona valores para os dias da semana
 volume_df['weekday'] = volume_df['time'].dt.dayofweek + 1
 
+#Classificar cada atributo de time aplicando a janela de tempo de vinte minutos
+volume_df['t'] = volume_df['time'].dt.time
+
 #Adicionando valores para saber se é referente a um fim de semana ou não
 volume_df['weekend'] = volume_df['weekday'].apply(lambda x: 0 if x < 6 else 1)
 
-#Classificar cada atributo de time aplicando a janela de tempo de vinte minutos
-volume_df['t'] = volume_df['time'].dt.time
+volume_df['hour'] = volume_df['t'].apply(get_hour)
+
+volume_df['date'] = volume_df['time'].dt.date
+
+
 volume_df['time_window'] = volume_df['t'].apply(get_timewindow)
 del volume_df['t']
 
@@ -109,11 +121,11 @@ volume_df.head()
 volume_df.info()
 
 
-# In[55]:
+# In[20]:
 
 
 #Salvando dados de treino
-volume_df.to_csv('processed_test_volume.csv', index = False)
+volume_df.to_csv('processed_test_volume2.csv', index = False)
 
 
 # In[46]:
@@ -122,15 +134,15 @@ volume_df.to_csv('processed_test_volume.csv', index = False)
 #Fazendo o mesmo processo para os dados de teste
 
 
-# In[116]:
+# In[21]:
 
 
-pd_volume_train = pd.read_csv('processed_train_volume.csv')
-pd_volume_test = pd.read_csv('processed_test_volume.csv')
+pd_volume_train = pd.read_csv('processed_training_volume2.csv')
+pd_volume_test = pd.read_csv('processed_test_volume2.csv')
 pd_volume_train = pd_volume_train.set_index(['time'])
 pd_volume_test = pd_volume_test.set_index(['time'])
-volume_train = pd_volume_train.groupby(['time_window','tollgate_id','direction','weekday']).size().reset_index().rename(columns = {0:'volume'})
-volume_test = pd_volume_test.groupby(['time_window','tollgate_id','direction','weekday']).size().reset_index().rename(columns = {0:'volume'})
+volume_train = pd_volume_train.groupby(['time_window','tollgate_id','direction','weekday', 'hour']).size().reset_index().rename(columns = {0:'volume'})
+volume_test = pd_volume_test.groupby(['time_window','tollgate_id','direction','weekday', 'hour']).size().reset_index().rename(columns = {0:'volume'})
 
 x = pd.Series(volume_train['time_window'].unique())
 s = pd.Series(range(len(x)),index = x.values)
@@ -142,16 +154,16 @@ volume_test['window_n'] = volume_test['time_window'].map(s)
 volume_test.head()
 
 
-# In[10]:
+# In[36]:
 
 
 def feature_format():
-    pd_volume_train = pd.read_csv('processed_train_volume.csv')
-    pd_volume_test = pd.read_csv('processed_test_volume.csv')
+    pd_volume_train = pd.read_csv('processed_training_volume2.csv')
+    pd_volume_test = pd.read_csv('processed_test_volume2.csv')
     pd_volume_train = pd_volume_train.set_index(['time'])
     pd_volume_test = pd_volume_test.set_index(['time'])
-    volume_train = pd_volume_train.groupby(['time_window','tollgate_id','direction','weekday']).size().reset_index().rename(columns = {0:'volume'})
-    volume_test = pd_volume_test.groupby(['time_window','tollgate_id','direction','weekday']).size().reset_index().rename(columns = {0:'volume'})
+    volume_train = pd_volume_train.groupby(['time_window','tollgate_id','direction','weekday', 'hour']).size().reset_index().rename(columns = {0:'volume'})
+    volume_test = pd_volume_test.groupby(['time_window','tollgate_id','direction','weekday', 'hour']).size().reset_index().rename(columns = {0:'volume'})
                     
     x = pd.Series(volume_train['time_window'].unique())
     s = pd.Series(range(len(x)),index = x.values)
@@ -167,31 +179,31 @@ def feature_format():
     return feature_train, feature_test, values_train, values_test
 
 
-# In[11]:
+# In[37]:
 
 
 x_train, x_test, y_train, y_test = feature_format()
 
 
-# In[12]:
+# In[24]:
 
 
 x_train
 
 
-# In[74]:
+# In[25]:
 
 
 y_train
 
 
-# In[75]:
+# In[26]:
 
 
 x_test.head()
 
 
-# In[76]:
+# In[27]:
 
 
 y_test
@@ -218,7 +230,7 @@ def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
 
-# In[108]:
+# In[29]:
 
 
 #Executando algoritmo de regressão linear
@@ -266,7 +278,7 @@ model2.fit(x_train, y_train)
 pred_y2 = model2.predict(x_test)
 
 
-# In[93]:
+# In[32]:
 
 
 #Algoritmo Regressão Linear com Gradiente Descendente Estocrástico
@@ -288,4 +300,26 @@ print(  rmse(pred_y1, y_test),"\n", #Algoritmo 1
         rmse(pred_y2, y_test),"\n", #Algoritmo 2
         rmse(pred_y3, y_test) #Algoritmo 3
      )
+
+
+# In[33]:
+
+
+mean_squared_error(pred_y3, y_test)
+
+
+# In[40]:
+
+
+rng = np.random.RandomState(1)
+regr = AdaBoostRegressor(DecisionTreeRegressor(max_depth = 21),
+                         n_estimators=11, random_state = rng)
+
+regr.fit(x_train, y_train)
+
+y_pred = regr.predict(x_test)
+
+mape = np.mean(np.abs((y_pred - y_test)/y_test))
+
+print (mape)
 

@@ -1,19 +1,19 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[6]:
 
 
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression
-from datetime import time
+from datetime import datetime
 import matplotlib.pyplot as pplot
 import math
 
 
-# In[33]:
+# In[30]:
 
 
 volume_df = pd.read_csv("dataset/volume(table 6)_training.csv")
@@ -43,13 +43,13 @@ volume_df.head()
     #Ficou definido que sera para passageiro, sendo maior que 4 será veiculo de carga
 
 
-# In[34]:
+# In[31]:
 
 
 volume_df['vehicle_type'] = volume_df['vehicle_model'].apply(lambda x: 0 if x < 5 else 1)
 
 
-# In[35]:
+# In[32]:
 
 
 volume_df['tollgate_id_string'] = volume_df['tollgate_id']
@@ -58,26 +58,17 @@ volume_df['tollgate_id_string'] = volume_df['tollgate_id'].replace({1: "1S", 2: 
 volume_df.head()
 
 
-# In[38]:
+# In[36]:
 
 
-def getTimeFormat(t):
-    value = int(math.floor(t.minute / 20) * 20)
-    return value
+def getTimeFormat(wd):
+    return '[{},{})'.format(str(wd), str(wd+timedelta(minutes=20)))
 
-def get_timewindow(t):
-        delta = 20
-        if t.minute < delta:
-            window = [time(t.hour, 0), time(t.hour,20)]
-        elif t.minute < delta*2:
-            window = [time(t.hour, 20), time(t.hour, 40)]
-        else:
-            try:
-                window = [time(t.hour, 40), time(t.hour + 1, 0)]
-            except ValueError:
-                window = [time(t.hour, 40), time(0,0,0)]
-        s_window = '[' + str(window[0]) + ',' + str(window[1]) + ')'
-        return s_window
+def time_to_window(x):
+    dt = datetime.strptime(x, "%Y-%m-%d %H:%M:%S")
+    dtmin = int(dt.minute / 20) * 20
+    dtwindow = datetime(dt.year, dt.month, dt.day, dt.hour, dtmin, 0)
+    return dtwindow
 
 if hasattr(time, 'strptime'):
     #python 2.6
@@ -86,14 +77,16 @@ else:
     #python 2.4 equivalent
     strptime = lambda date_string, format: time(*(time.strptime(date_string, format)[0:6]))
 
-volume_df['time'] =  pd.to_datetime(volume_df['time'] , format='%Y-%m-%d %H:%M:%S')
-#volume_df = volume_df.set_index(['time'])
-
-volume_df = volume_df.groupby([pd.Grouper(key='time',freq='20Min'), 'tollgate_id', 'direction']).size()       .reset_index().rename(columns = {0:'volume'})
-
-
-# In[39]:
+#volume_df['time'] =  pd.to_datetime(volume_df['time'] , format='%Y-%m-%d %H:%M:%S')
+volume_df['window'] = volume_df['time'].apply(time_to_window)
+#volume_df = volume_df.groupby(['tollgate_id','direction','window']).count()['time']
 
 
-volume_df.head()
+volume_df = volume_df.groupby([pd.Grouper(key='window'), 'tollgate_id', 'direction']).size()      .reset_index().rename(columns = {0:'volume'})
+
+
+# In[37]:
+
+
+volume_df
 
