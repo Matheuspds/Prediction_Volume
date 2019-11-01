@@ -158,7 +158,7 @@ volume_test['window_n'] = volume_test['time_window'].map(s)
 volume_test.head()
 
 
-# In[80]:
+# In[100]:
 
 
 def feature_format():
@@ -185,22 +185,29 @@ def feature_format():
     return feature_train, feature_test, values_train, values_test
 
 
-# In[81]:
+# In[104]:
+
+
+pd_volume_train = pd.read_csv('processed_train_volume2.csv')
+pd_volume_train.head()
+
+
+# In[101]:
 
 
 feature_train, feature_test, values_train, values_test = feature_format()
 
 
-# In[82]:
+# In[103]:
 
 
 print(feature_train)
 
 
-# In[83]:
+# In[93]:
 
 
-feature_train[['window_n', 'tollgate_id', 'direction', 'weekday']]
+feature_train[['window_n', 'tollgate_id', 'direction', 'weekday']].head
 
 
 # In[84]:
@@ -262,7 +269,7 @@ def rmse(predictions, targets):
     return rmse_val
 
 
-# In[78]:
+# In[90]:
 
 
 #Função que calcula o MAPE
@@ -271,13 +278,13 @@ def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
 
-# In[29]:
+# In[89]:
 
 
 #Executando algoritmo de regressão linear
 model1 = LinearRegression()
-model1.fit(x_train, y_train)
-pred_y1 = model1.predict(x_test)
+model1.fit(feature_train[['window_n', 'tollgate_id', 'direction', 'weekday']], values_train)
+pred_y1 = model1.predict(feature_test[['window_n', 'tollgate_id', 'direction', 'weekday']])
 pred_y1
 
 
@@ -328,10 +335,10 @@ model3.fit(x_train, y_train)
 pred_y3 = model3.predict(x_test)
 
 
-# In[103]:
+# In[91]:
 
 
-mean_absolute_percentage_error(y_test, pred_y1)
+mean_absolute_percentage_error(values_test, pred_y1)
 
 
 # In[102]:
