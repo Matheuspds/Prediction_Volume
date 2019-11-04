@@ -1,0 +1,69 @@
+
+
+
+
+OS DADOS ESTÃO DISTRIBUIDOS ASSIM:
+
+TIME				|	TOLLGATE_ID	|	DIRECTION	|	TIME_WINDOW			|	DATE		|	HOUR	|	VOLUME	| WEEKDAY |               
+2016-09-19 00:00:00	|	1			|		0		|  [00:00:00,00:20:00)	|  2016-09-19	|	0		|	 13		|	1	  |
+
+
+VOLUME_MEDIO |	DESVIO_PADRAO
+	14.0	 |	4.795831523312719
+
+
+O que eles tem como fatores principais: 
+- tollgate_id: identifica o pedágio;
+- direction: indica se ta saindo ou entrando na rodovia;
+- time_window: junta todas as ocorrencia de um determinado tollgate em uma determinada direção dentro de uma faixa de tempo de 20min padrão;
+- volume: indica o agregado de carros que passaram no tollgate, naquela time_window, considerando a direção
+- weekday: indica o dia da semana: sendo 1 - segunda, 7 - domingo;
+- date: data que representa a ocorrencia e determina em qual janela de tempo se encaixa;
+
+O que eu estou precisando:
+
+Para aumentar o numero de colunas eu preciso fazer uma função que eu passe um parametro e esse parametro determine quantas ocorrências anteriores eu preciso analisar, verificar o volume e adicionar na ocorrência atual;
+
+Exemplo:
+
+linha 10: tollgate_id = 1, direction = 1, weekday = 1, time_window (00h - 00:20h), volume = 30
+
+linha 20: tollgate_id = 1, direction = 1, weekday = 1, time_window (00:20h - 00:40h), volume = 25
+
+se na minha função eu fizer:
+
+def funcao(n= 1): {
+	
+	- Ela verificar a linha atual do dataframe (linha 20), percorrer o dataframe procurando a ocorrência anterior na linha com as mesmas caracteristicas (linha 10) e adicionar o volume da linha 10 (= 30) como uma nova coluna com valor 30 na linha 20.
+
+	- Ficando assim na linha 20: volume = 25, volume_1 = 30
+}
+
+
+
+Exemplo 2:
+
+linha 5: tollgate_id = 1, direction = 1, weekday = 1, time_window (00:00h - 00:20h), volume = 7
+
+linha 10: tollgate_id = 1, direction = 1, weekday = 1, time_window (00:20h - 00:40h), volume = 30
+
+linha 20: tollgate_id = 1, direction = 1, weekday = 1, time_window (00:40h - 01:00h), volume = 25
+
+se na minha função eu fizer:
+
+def funcao(n= 2): {
+	
+	- Ela verificar a linha atual do dataframe (linha 20), percorrer o dataframe procurando a antipenultima ocorrência na linha com as mesmas caracteristicas (linha 5) e adicionar o volume da linha 5 (= 7) como uma nova coluna com valor 7 na linha 20.
+
+	- Ficando assim na linha 20: volume = 25, volume_1 = 30, volume_2 = 7
+}
+
+E assim por diante...
+
+
+link pro linkedin: https://github.com/Matheuspds/Prediction_Volume
+
+SE TU OLHAR NO ARQUIVO dados_com_media_desvio_treino_volume e dados_com_media_desvio_sem_weekday_teste_volume
+vai ver os dados bem detalhados. Foram os arquivos finais que eu gerei
+
+no github o notebook PreProcessamentoGroupBy.ipynb vão ter as alterações que eu fiz ontem e modelo que eu usei com o resultado que ele retornou pra mim.
