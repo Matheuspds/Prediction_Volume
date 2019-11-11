@@ -6,7 +6,7 @@
 
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import SGDRegressor
 from datetime import time
@@ -304,7 +304,7 @@ pd_volume_test.isnull().sum()
 pd_volume_test.to_csv('dados_teste_volume_com_valor_anterior.csv', index = False)
 
 
-# In[56]:
+# In[2]:
 
 
 def feature_format():
@@ -331,13 +331,13 @@ def feature_format():
     return feature_train, feature_test, values_train, values_test
 
 
-# In[57]:
+# In[3]:
 
 
 feature_train, feature_test, values_train, values_test = feature_format()
 
 
-# In[73]:
+# In[4]:
 
 
 feature_train
@@ -350,7 +350,7 @@ feature_train
 values_train
 
 
-# In[108]:
+# In[9]:
 
 
 rng = np.random.RandomState(1)
@@ -358,7 +358,7 @@ regr = AdaBoostRegressor(DecisionTreeRegressor(max_depth = 50),
                          n_estimators=300, random_state = rng)
 
 
-# In[117]:
+# In[10]:
 
 
 regr.fit(feature_train[['window_n','tollgate_id', 'direction', 'weekday', 'volume_anterior', 'volume_anterior_2','media_volume', 'desvio_padrao']], values_train)
@@ -368,41 +368,41 @@ y_pred = regr.predict(feature_test[['window_n','tollgate_id', 'direction', 'week
 mape = np.mean(np.abs((y_pred - values_test)/values_test))
 
 #print (feature_test)
-y_pred
+mape
 #regr.score(feature_train[['window_n','tollgate_id', 'direction', 'weekday', 'volume_anterior','volume_anterior_2','media_volume', 'desvio_padrao']], values_train) 
 
 
-# In[113]:
+# In[32]:
 
 
-df_train_grouped = feature_train.groupby(["tollgate_id", "direction"])
-df_test_grouped = feature_test.groupby(["tollgate_id", "direction"])
-for key, train_data in df_train_grouped:
-
-        test_data = df_test_grouped.get_group(key)
-        len_train = len(train_data)
-        train_data = train_data.append(test_data)[train_data.columns.tolist()]
-        train_data = feature_transform_split(key, train_data)
+# Instantiate model with 1000 decision trees
+rf = RandomForestRegressor(n_estimators = 1500, random_state = 42)
+# Train the model on training data
+rf.fit(feature_train[['tollgate_id', 'direction', 'weekday','volume_anterior','media_volume', 'desvio_padrao']], values_train);
 
 
-        regressor_cubic = RandomForestRegressor(n_estimators=500, max_features='sqrt', random_state=10, oob_score=True)
-
-        train_data = pd.DataFrame.reset_index(train_data)
-        train_data = train_data.drop("index", axis=1)
-        y = train_data.ix[:len_train - 1, :]["volume"]
+# In[33]:
 
 
-        x = train_data.ix[:len_train - 1, 8:]
-        x1 = train_data.ix[len_train:, 8:]
-
-        regressor_cubic.fit(x, y)
-        yhat = regressor_cubic.predict(x1)
-
-        test_data["volume"] = yhat
-        result.append(test_data[['tollgate_id', 'time_window', 'direction', 'volume']])
+# Use the forest's predict method on the test data
+predictions = rf.predict(feature_test[['tollgate_id', 'direction', 'weekday', 'volume_anterior', 'media_volume', 'desvio_padrao']])
+# Calculate the absolute errors
+errors = abs(predictions - values_test)
+# Print out the mean absolute error (mae)
+print('Mean Absolute Error:', round(np.mean(errors), 2), 'degrees.')
 
 
-# In[78]:
+# In[34]:
+
+
+# Calculate mean absolute percentage error (MAPE)
+mape = 100 * (errors / values_test)
+# Calculate and display accuracy
+accuracy = 100 - np.mean(mape)
+print('Accuracy:', round(accuracy, 2), '%.')
+
+
+# In[16]:
 
 
 #Função que calcula o MAPE
@@ -411,8 +411,8 @@ def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
 
-# In[79]:
+# In[17]:
 
 
-mean_absolute_percentage_error(y_pred, values_test)
+mean_absolute_percentage_error(predictions, values_test)
 
