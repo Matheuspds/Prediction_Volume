@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 import pandas as pd
@@ -10,7 +10,7 @@ import numpy as np
 path = "data_after_process/"
 
 
-# In[5]:
+# In[1]:
 
 
 #Buscando criar novas colunas com dados de data, hora, minuto, time para a determinada linha do dataset
@@ -22,6 +22,14 @@ def df_filter(df_volume):
     df_volume["time_window"] = df_volume["time"]
     df_volume = df_volume[["tollgate_id", "time_window", "direction", "volume", "time", "date", "hour", "miniute"]]
     return  df_volume
+
+
+# In[6]:
+
+
+df_test = pd.read_csv(path+"test_0.csv" )
+df_test = df_filter(df_test)
+df_test.head()
 
 
 # In[3]:

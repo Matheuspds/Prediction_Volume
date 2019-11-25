@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[22]:
+# In[1]:
 
 
 import numpy as np
@@ -9,6 +9,7 @@ import pandas as pd
 from sklearn import datasets
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import RandomizedSearchCV
 
 
 # In[2]:

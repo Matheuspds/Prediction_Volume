@@ -18,7 +18,7 @@ def manha_ou_tarde(x):
     return 0
 
 
-# In[4]:
+# In[19]:
 
 
 #Função que diz se a hora é mais especifica ou não. Verifica dois horários dos quais podem ter bem mais fluxo
@@ -29,7 +29,7 @@ def calc_period_num(x):
     return 0
 
 
-# In[17]:
+# In[20]:
 
 
 def generate_train(filname):
@@ -46,10 +46,10 @@ def generate_train(filname):
             ["tollgate_id", "direction", "date", "am_pm"]).transform(f2)
 
     df_volume = df_volume[
-        (df_volume["hour"] == 8) |
-        (df_volume["hour"] == 9) |
-        (df_volume["hour"] == 17) |
-        (df_volume["hour"] == 18)]
+        (df_volume["hour"] == 6) |
+        (df_volume["hour"] == 7) |
+        (df_volume["hour"] == 15) |
+        (df_volume["hour"] == 16)]
 
     df_volume["period_num"] = df_volume["hour"].apply(lambda x: calc_period_num(x))
     df_volume["period_num"] = df_volume["period_num"] + df_volume["miniute"].apply(lambda x: x / 20)
@@ -64,7 +64,7 @@ def generate_train(filname):
     return df_volume
 
 
-# In[10]:
+# In[34]:
 
 
 def combined_train():
@@ -86,7 +86,19 @@ def combined_train():
     df4.to_csv("train3.csv", index=False)
 
 
-# In[11]:
+# In[35]:
+
+
+df1 = combined_train()
+
+
+# In[33]:
+
+
+
+
+
+# In[36]:
 
 
 def get_test():
@@ -95,7 +107,7 @@ def get_test():
     df1.to_csv("test2.csv", index=False)
 
 
-# In[18]:
+# In[37]:
 
 
 combined_train()

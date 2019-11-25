@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 import pandas as pd
@@ -11,14 +11,14 @@ path = "../dataset/"
 freq = "20min"
 
 
-# In[6]:
+# In[2]:
 
 
 df_train1 = pd.read_csv(path+"volume(table 6)_training.csv", parse_dates=['time'])
 df_train2 = pd.read_csv(path+"volume(table 6)_training2.csv", parse_dates=['date_time'])
 df_train2 = df_train2.rename(columns = {'date_time':'time','tollgate':'tollgate_id','is_etc':'has_etc','veh_type':'vehicle_type','model':'vehicle_model'})
 df_train = df_train1.append(df_train2)
-df_train.head()
+df_train.tail()
 
 
 # In[8]:

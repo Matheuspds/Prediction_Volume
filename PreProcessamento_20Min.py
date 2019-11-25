@@ -45,7 +45,7 @@ pd_volume_train.head()
 #pd_volume_test.head()
 
 
-# In[5]:
+# In[4]:
 
 
 pd_volume_train['time'] =  pd.to_datetime(pd_volume_train['time'] , format='%Y-%m-%d %H:%M:%S')
@@ -55,25 +55,25 @@ pd_volume_train['time'] =  pd.to_datetime(pd_volume_train['time'] , format='%Y-%
 pd_volume_train = pd_volume_train.groupby([pd.Grouper(freq='20T', key='time'), 'tollgate_id', 'direction', 'time_window', 'date', 'hour']).size()       .reset_index().rename(columns = {0:'volume'})
 
 
-# In[6]:
+# In[5]:
 
 
 pd_volume_train.head()
 
 
-# In[7]:
+# In[6]:
 
 
 pd_volume_train['weekday'] = pd_volume_train['time'].dt.dayofweek + 1
 
 
-# In[8]:
+# In[7]:
 
 
 pd_volume_train[pd_volume_train['weekday'] == 3]
 
 
-# In[18]:
+# In[8]:
 
 
 #Adicionando valor da janela de tempo anterior na janela de tempo atual
@@ -95,13 +95,13 @@ pd_volume_train["volume_anterior_2"] =pd_volume_train.groupby(['direction', 'tol
 pd_volume_train
 
 
-# In[20]:
+# In[8]:
 
 
 pd_volume_train.head()
 
 
-# In[50]:
+# In[10]:
 
 
 # Converte array em matriz
@@ -114,7 +114,7 @@ def create_dataset(dataset, look_back=1):
     return numpy.array(dataX), numpy.array(dataY)
 
 
-# In[22]:
+# In[9]:
 
 
 # Transpõe
@@ -147,13 +147,13 @@ df_transf = pd_volume_train
 df_transf.head()
 
 
-# In[23]:
+# In[10]:
 
 
 df_transf['media_volume'] = df_transf.groupby(['time_window', 'weekday', 'direction', 'tollgate_id'])["volume"].transform(np.mean)
 
 
-# In[24]:
+# In[11]:
 
 
 #df_transf['media_volume'] = df_transf['soma'].mean
@@ -161,32 +161,32 @@ df_transf.head()
 #del df_transf['soma']
 
 
-# In[379]:
+# In[12]:
 
 
 values = np.array(df_transf['volume'])
 
 
-# In[382]:
+# In[13]:
 
 
 values
 
 
-# In[25]:
+# In[12]:
 
 
 df_transf['desvio_padrao'] = df_transf.groupby(['time_window', 'weekday', 'direction', 'tollgate_id'])["volume"].transform(np.std)
 
 
-# In[26]:
+# In[13]:
 
 
 df_transf.head()
 #del df_transf['desvio_padrao']
 
 
-# In[27]:
+# In[14]:
 
 
 #df_transf['mediaArredondada'] = df_transf['media_volume'].sum()
@@ -195,13 +195,13 @@ df_transf['desvio_padrao'].fillna(df_transf.groupby(['time_window', 'weekday', '
 #del df_transf['mediaArredondada']
 
 
-# In[28]:
+# In[15]:
 
 
 df_transf.isnull().sum()
 
 
-# In[29]:
+# In[18]:
 
 
 df_transf.to_csv('dados_treino_volume_com_valor_anterior.csv', index = False)
@@ -214,19 +214,19 @@ df_transf.to_csv('dados_treino_volume_com_valor_anterior.csv', index = False)
 medi
 
 
-# In[39]:
+# In[19]:
 
 
 pd_volume_test = pd.read_csv('processed_test_volume2.csv')
 
 
-# In[40]:
+# In[20]:
 
 
 pd_volume_test.head()
 
 
-# In[41]:
+# In[21]:
 
 
 pd_volume_test['time'] =  pd.to_datetime(pd_volume_test['time'] , format='%Y-%m-%d %H:%M:%S')
@@ -236,25 +236,25 @@ pd_volume_test['time'] =  pd.to_datetime(pd_volume_test['time'] , format='%Y-%m-
 pd_volume_test = pd_volume_test.groupby([pd.Grouper(freq='20T', key='time'), 'tollgate_id', 'direction', 'time_window', 'date', 'hour']).size()       .reset_index().rename(columns = {0:'volume'})
 
 
-# In[42]:
+# In[22]:
 
 
 pd_volume_test.head()
 
 
-# In[43]:
+# In[23]:
 
 
 pd_volume_test['weekday'] = pd_volume_test['time'].dt.dayofweek + 1
 
 
-# In[44]:
+# In[24]:
 
 
 pd_volume_test[pd_volume_test['weekday'] == 3].head()
 
 
-# In[46]:
+# In[25]:
 
 
 pd_volume_test["volume_anterior"] = pd_volume_test.groupby(['direction', 'tollgate_id'])["volume"].transform("shift")
@@ -264,7 +264,7 @@ pd_volume_test["volume_anterior"] =pd_volume_test.groupby("time_window")["volume
 pd_volume_test.head()
 
 
-# In[50]:
+# In[26]:
 
 
 pd_volume_test["volume_anterior_2"] = pd_volume_test.groupby(['direction', 'tollgate_id'])["volume"].transform("shift", 2)
@@ -274,25 +274,25 @@ pd_volume_test["volume_anterior_2"] =pd_volume_test.groupby("time_window")["volu
 pd_volume_test.head()
 
 
-# In[51]:
+# In[27]:
 
 
 pd_volume_test['media_volume'] = pd_volume_test.groupby(['time_window', 'direction', 'tollgate_id'])["volume"].transform(np.mean)
 
 
-# In[118]:
+# In[28]:
 
 
 pd_volume_test.tail()
 
 
-# In[53]:
+# In[29]:
 
 
 pd_volume_test['desvio_padrao'] = pd_volume_test.groupby(['time_window', 'direction', 'tollgate_id'])["volume"].transform(np.std)
 
 
-# In[54]:
+# In[30]:
 
 
 pd_volume_test.isnull().sum()
@@ -303,21 +303,36 @@ pd_volume_test.isnull().sum()
 
 ve_train = pd.read_csv('dados_treino_volume_com_valor_anterior.csv')
 ve_test = pd.read_csv('dados_teste_volume_com_valor_anterior.csv')
-ve_test.count()
+ve_train.count()
 
 
-# In[55]:
+# In[32]:
 
 
 pd_volume_test.to_csv('dados_teste_volume_com_valor_anterior.csv', index = False)
 
 
-# In[4]:
+# In[45]:
+
+
+v_train = pd.read_csv('dados_treino_volume_com_valor_anterior.csv')
+v_test = pd.read_csv('dados_teste_volume_com_valor_anterior.csv')
+
+
+# In[46]:
+
+
+df_remove = v_train.loc[(v_train['date'] >= '2016-10-01') 
+                         & (v_train['date'] <= '2016-10-07') 
+                        ]
+
+v_train = v_train.drop(df_remove.index)
+
+
+# In[47]:
 
 
 def feature_format():
-    v_train = pd.read_csv('dados_treino_volume_com_valor_anterior.csv')
-    v_test = pd.read_csv('dados_teste_volume_com_valor_anterior.csv')
     #pd_volume_train = pd_volume_train.set_index(['time'])
     #pd_volume_test = pd_volume_test.set_index(['time'])
     #volume_train = v_train.groupby(['time_window','tollgate_id','direction','date', 'hour']).size().reset_index().rename(columns = {0:'volume'})
@@ -339,26 +354,26 @@ def feature_format():
     return feature_train, feature_test, values_train, values_test
 
 
-# In[5]:
+# In[48]:
 
 
 feature_train, feature_test, values_train, values_test = feature_format()
 
 
-# In[21]:
+# In[49]:
 
 
-feature_test.count()
+feature_test.head()
 #pd_volume_train[pd_volume_train['weekday'] == 3].head()
 
 
-# In[20]:
+# In[36]:
 
 
 len(values_train)
 
 
-# In[10]:
+# In[50]:
 
 
 rng = np.random.RandomState(1)
@@ -366,41 +381,41 @@ regr = AdaBoostRegressor(DecisionTreeRegressor(max_depth = 50),
                          n_estimators=300, random_state = rng)
 
 
-# In[12]:
+# In[52]:
 
 
-regr.fit(feature_train[['window_n','tollgate_id', 'direction', 'weekday', 'volume_anterior', 'volume_anterior_2','media_volume', 'desvio_padrao']], values_train)
+regr.fit(feature_train[['window_n', 'weekday', 'volume_anterior','media_volume', 'desvio_padrao']], values_train)
 
-y_pred = regr.predict(feature_test[['window_n','tollgate_id', 'direction', 'weekday', 'volume_anterior','volume_anterior_2', 'media_volume', 'desvio_padrao']])
+y_pred = regr.predict(feature_test[['window_n', 'weekday', 'volume_anterior', 'media_volume', 'desvio_padrao']])
 
 mape = np.mean(np.abs((y_pred - values_test)/values_test))
 
 #print (feature_test)
-len(y_pred)
+print(mape)
 #regr.score(feature_train[['window_n','tollgate_id', 'direction', 'weekday', 'volume_anterior','volume_anterior_2','media_volume', 'desvio_padrao']], values_train) 
 
 
-# In[32]:
+# In[67]:
 
 
 # Instantiate model with 1000 decision trees
 rf = RandomForestRegressor(n_estimators = 1500, random_state = 42)
 # Train the model on training data
-rf.fit(feature_train[['tollgate_id', 'direction', 'weekday','volume_anterior','media_volume', 'desvio_padrao']], values_train);
+rf.fit(feature_train[['weekday','volume_anterior','media_volume', 'desvio_padrao', 'window_n']], values_train);
 
 
-# In[33]:
+# In[68]:
 
 
 # Use the forest's predict method on the test data
-predictions = rf.predict(feature_test[['tollgate_id', 'direction', 'weekday', 'volume_anterior', 'media_volume', 'desvio_padrao']])
+predictions = rf.predict(feature_test[['weekday', 'volume_anterior', 'media_volume', 'desvio_padrao', 'window_n']])
 # Calculate the absolute errors
 errors = abs(predictions - values_test)
 # Print out the mean absolute error (mae)
 print('Mean Absolute Error:', round(np.mean(errors), 2), 'degrees.')
 
 
-# In[34]:
+# In[69]:
 
 
 # Calculate mean absolute percentage error (MAPE)
@@ -410,7 +425,7 @@ accuracy = 100 - np.mean(mape)
 print('Accuracy:', round(accuracy, 2), '%.')
 
 
-# In[16]:
+# In[70]:
 
 
 #Função que calcula o MAPE
@@ -419,8 +434,33 @@ def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
 
-# In[17]:
+# In[71]:
 
 
-mean_absolute_percentage_error(predictions, values_test)
+mean_absolute_percentage_error(values_test, predictions)
+
+
+# In[78]:
+
+
+def rmse(predictions, targets):
+    return np.sqrt(np.mean((predictions-targets)**2))
+
+
+# In[80]:
+
+
+rmse(values_test, predictions)
+
+
+# In[74]:
+
+
+values_test
+
+
+# In[75]:
+
+
+predictions
 

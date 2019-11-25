@@ -1,89 +1,104 @@
 
 # coding: utf-8
 
-# In[24]:
+# In[17]:
 
 
 import pandas as pd
+import numpy as np
 from datetime import time
-
-
-# In[12]:
-
-
-df_final = pd.read_csv("../dataset/volume(table 6)_test2.csv")
-df_final.head()
-
-
-# In[21]:
-
-
-df_final = df_final.rename(columns = {'date_time':'time','tollgate':'tollgate_id','is_etc':'has_etc','veh_type':'vehicle_type','model':'vehicle_model'})
-
-df_final.head()
+from sklearn.metrics import mean_absolute_error
 
 
 # In[22]:
 
 
-#Função que será usada para obter a janela de tempo de 20 minutos
-def get_timewindow(t):
-        time_window = 20
-        if t.minute < time_window:
-            window = [time(t.hour, 0), time(t.hour,20)]
-        elif t.minute < time_window*2:
-            window = [time(t.hour, 20), time(t.hour, 40)]
-        else:
-            try:
-                window = [time(t.hour, 40), time(t.hour + 1, 0)]
-            except ValueError:
-                window = [time(t.hour, 40), time(0,0,0)]
-        s_window = '[' + str(window[0]) + ',' + str(window[1]) + ')'
-        return s_window
-
-def get_hour(t):
-        return t.hour
+df_final_real = pd.read_csv("result/resultado_real.csv")
+df_final_real.head()
 
 
-# In[25]:
+# In[31]:
 
 
-df_final['t'] = df_final['time'].dt.time
-
-df_final['time_window'] = df_final['t'].apply(get_timewindow)
-
-
-# In[26]:
+df_final_real = df_final_real.sort_values(['tollgate_id', 'direction'])
+df_final_real.head()
 
 
-df_final['time'] =  pd.to_datetime(df_final['time'] , format='%Y-%m-%d %H:%M:%S')
-
-df_final = df_final.groupby([pd.Grouper(freq='20T', key='time'), 'tollgate_id', 'direction', 'time_window']).size()       .reset_index().rename(columns = {0:'volume'})
+# In[32]:
 
 
-# In[27]:
+df_final_predict = pd.read_csv('result/result_split_rf_TESTAR_AGORA.csv')
+df_final_predict.head()
 
 
-df_final.head()
+# In[33]:
 
 
-# In[28]:
+volume_real = df_final_real['volume'].values
+volume_real
 
 
-df_remove = df_final.loc[(df_final['volume'] == 0)]
-
-ultimo_df = df_final.drop(df_remove.index)
-ultimo_df.head()
+# In[34]:
 
 
-# In[29]:
+volume_predict = df_final_predict['volume'].values
+volume_predict
 
 
-ultimo_df.head()
+# In[35]:
 
 
-# In[30]:
+#Função que calcula o MAPE
+def mean_absolute_percentage_error(y_true, y_pred): 
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
 
-ultimo_df.to_csv("resultado_real_teste.csv", index=False)
+# In[36]:
+
+
+mean_absolute_percentage_error(volume_real, volume_predict)
+
+
+# In[37]:
+
+
+mape = np.mean(np.abs((volume_predict - volume_real)/volume_real))
+
+
+# In[38]:
+
+
+mape
+
+
+# In[15]:
+
+
+def rmse(predictions, targets):
+    differences = predictions - targets
+    differences_squared = differences ** 2
+    mean_of_differences_squared = differences_squared.mean()
+    rmse_val = np.sqrt(mean_of_differences_squared)
+    return rmse_val
+
+
+# In[16]:
+
+
+rmse(volume_predict, volume_real)
+
+
+# In[19]:
+
+
+#mean_absolute_error(volume_real, volume_predict)
+
+
+# In[42]:
+
+
+y_true = [3, 3, 2, 2]
+y_pred = [3, 3, 2,2]
+mean_absolute_error(volume_real, volume_predict)
 

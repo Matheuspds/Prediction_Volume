@@ -13,20 +13,19 @@ from sklearn.preprocessing import MinMaxScaler
 import random
 
 
-# In[72]:
+# In[20]:
 
 
-df_test = pd.read_csv("test2_no_filter.csv")
+df_test = pd.read_csv("test2.csv")
 
-df_train0 = pd.read_csv("train_no_filter.csv")
-df_train1 = pd.read_csv("train1_no_filter.csv")
-df_train2 = pd.read_csv("train2_no_filter.csv")
-df_train3 = pd.read_csv("train3_no_filter.csv")
-df_train_list = [df_train0,df_train1, df_train2, df_train3]
-df_train0.head()
+df_train0 = pd.read_csv("train.csv")
+df_train1 = pd.read_csv("train1.csv")
+df_train2 = pd.read_csv("train2.csv")
+df_train3 = pd.read_csv("train3.csv")
+df_train_list = [df_train0, df_train1, df_train2, df_train3]
 
 
-# In[58]:
+# In[21]:
 
 
 def feature_transform_split(key, data):
@@ -62,23 +61,21 @@ def feature_transform_split(key, data):
     return data
 
 
-# In[59]:
+# In[22]:
 
 
-#df_hue = pd.concat(df_train_list)
-#df_hue.to_csv("result/result_split_rf_huehue"+"huehue"+".csv", index=False)
 random.shuffle(df_train_list)
 df_train = pd.concat(df_train_list)
 
 #df_ts = pd.read_csv("ts_feature2_simple.csv")
 df_date = pd.read_csv("date.csv")
-
 df_train = df_train.merge(df_date, on="date", how="left")
 #df_train = df_train.merge(df_ts, on=["tollgate_id", "hour", "miniute", "direction"], how="left")
-
 df_test = df_test.merge(df_date, on="date", how="left")
 #df_test = df_test.merge(df_ts, on=["tollgate_id", "hour", "miniute", "direction"], how="left")
 
+df_train_grouped = df_train.groupby(["tollgate_id", "direction"])
+df_test_grouped = df_test.groupby(["tollgate_id", "direction"])
 df_train_grouped = df_train.groupby(["tollgate_id", "direction"])
 df_test_grouped = df_test.groupby(["tollgate_id", "direction"])
 result = []
@@ -88,56 +85,59 @@ for key, train_data in df_train_grouped:
     len_train = len(train_data)
     train_data = train_data.append(test_data)[train_data.columns.tolist()]
     train_data = feature_transform_split(key, train_data)
-    
+
+    regressor_cubic = RandomForestRegressor(n_estimators=500, max_features='sqrt', random_state=10, oob_score=True)
+
     train_data = pd.DataFrame.reset_index(train_data)
     train_data = train_data.drop("index", axis=1)
     y = train_data.ix[:len_train - 1, :]["volume"]
+
     x = train_data.ix[:len_train - 1, 8:]
     x1 = train_data.ix[len_train:, 8:]
+    regressor_cubic.fit(x, y)
+    yhat = regressor_cubic.predict(x1)
+    
+    test_data["volume"] = yhat
+    result.append(test_data[['tollgate_id', 'time_window', 'direction', 'volume']])
 
 
-# In[30]:
+# In[23]:
 
 
-x1.head()
-
-
-# In[60]:
-
-
-regressor = RandomForestRegressor(n_estimators=500, max_features='sqrt', random_state=10, oob_score=True)
-
-
-# In[61]:
-
-
-regressor.fit(x, y)
-
-
-# In[70]:
-
-
-resultado_obtido = regressor.predict(x1)
-resultado_obtido
-test_data["volume"] = resultado_obtido
-result.append(test_data[['tollgate_id', 'time_window', 'direction', 'volume']])
 df_result = pd.concat(result, axis=0)
-#df_result.to_csv("resultado_final"+str(np.mean(df_result["volume"]))+".csv", index=False)
-df_result.tail()
+
+df_result.to_csv("result/result_split_rf_TESTAR_AGORA"+".csv", index=False)
 
 
-# In[68]:
+# In[9]:
 
 
-df_ = pd.read_csv("test2_no_filter.csv")
-values_test = df_['volume'].values
-df_.head()
+#regressor = RandomForestRegressor(n_estimators=500, max_features='sqrt', random_state=10, oob_score=True)
 
 
-# In[67]:
+# In[16]:
 
 
-mape = np.mean(np.abs((resultado_obtido - values_test)/values_test))
+#regressor.fit(x, y)
+
+
+# In[24]:
+
+
+df_pred = pd.read_csv("result/result_split_rf_TESTAR_AGORA"+".csv")
+df_real = pd.read_csv("resultado_real_teste.csv")
+
+
+# In[25]:
+
+
+df_pred.head()
+
+
+# In[26]:
+
+
+df_real.head()
 
 
 # In[75]:

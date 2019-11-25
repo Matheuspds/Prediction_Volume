@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[87]:
+# In[1]:
 
 
 import pandas as pd
@@ -13,7 +13,7 @@ from sklearn.preprocessing import MinMaxScaler
 import random
 
 
-# In[106]:
+# In[2]:
 
 
 df_test = pd.read_csv("test2.csv")
@@ -23,10 +23,10 @@ df_train1 = pd.read_csv("train1.csv")
 df_train2 = pd.read_csv("train2.csv")
 df_train3 = pd.read_csv("train3.csv")
 df_train_list = [df_train0,df_train1, df_train2, df_train3]
-df_test.head()
+df_train3.head()
 
 
-# In[107]:
+# In[3]:
 
 
 def feature_transform_split(key, data):
@@ -62,7 +62,7 @@ def feature_transform_split(key, data):
     return data
 
 
-# In[112]:
+# In[4]:
 
 
 #df_hue = pd.concat(df_train_list)
@@ -110,12 +110,12 @@ for key, train_data in df_train_grouped:
     result.append(test_data[['tollgate_id', 'time_window', 'direction', 'volume']])
 
 
-# In[115]:
+# In[8]:
 
 
 df_result = pd.concat(result, axis=0)
-#df_result.to_csv("resultado_final"+str(np.mean(df_result["volume"]))+".csv", index=False)
-df_result.count()
+df_result.to_csv("resultado_final"+"verificar"+".csv", index=False)
+df_result.head()
 
 
 # In[117]:
