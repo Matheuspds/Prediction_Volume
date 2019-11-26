@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[198]:
+# In[127]:
 
 
 import pandas as pd
@@ -24,14 +24,15 @@ from math import sqrt
 from sklearn.cross_validation import ShuffleSplit, train_test_split
 
 
-# In[323]:
+# In[230]:
 
 
 df_train = pd.read_csv('data_process_final/treino_final.csv')
 df_teste = pd.read_csv('data_process_final/teste_final.csv')
+df_teste_para_weekday = pd.read_csv('data_process_final/teste_final_para_weekday.csv')
 
 
-# In[324]:
+# In[231]:
 
 
 df_remove = df_train.loc[(df_train['day'] >= 1) & (df_train['day'] <= 7) ]
@@ -39,21 +40,21 @@ df_remove = df_train.loc[(df_train['day'] >= 1) & (df_train['day'] <= 7) ]
 df_train = df_train.drop(df_remove.index)
 
 
-# In[325]:
+# In[232]:
 
 
 del df_train['volume_proximo']
 del df_teste['volume_proximo']
 
 
-# In[326]:
+# In[233]:
 
 
 del df_train['volume_proximo_2']
 del df_teste['volume_proximo_2']
 
 
-# In[327]:
+# In[234]:
 
 
 def adiciona_media_desvio_por_dia(df):
@@ -66,14 +67,14 @@ def adiciona_media_desvio_por_dia(df):
     return df
 
 
-# In[329]:
+# In[235]:
 
 
 df_train = adiciona_media_desvio_por_dia(df_train)
 df_teste= adiciona_media_desvio_por_dia(df_teste)
 
 
-# In[330]:
+# In[236]:
 
 
 def adiciona_media_desvio_por_janela_dia_semana_1(df):
@@ -81,12 +82,12 @@ def adiciona_media_desvio_por_janela_dia_semana_1(df):
     df['date'] = df['time'].dt.date
     mask = (df['time'] > '2016-09-18 00:00:00') & (df['time'] < '2016-09-26 00:00:00')
     df = df.loc[mask]
-    df['min_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.min)
-    df['max_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.max)
-    df['mediana_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.median)
-    df['media_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean)
-    df['desvio_padrao_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.std)
-    df['desvio_padrao_weekday'].fillna(df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean), inplace=True)
+    df['min_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.min)
+    df['max_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.max)
+    df['mediana_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.median)
+    df['media_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean)
+    df['desvio_padrao_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.std)
+    df['desvio_padrao_weekday'].fillna(df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean), inplace=True)
     return df
 
 def adiciona_media_desvio_por_janela_dia_semana_2(df):
@@ -95,12 +96,12 @@ def adiciona_media_desvio_por_janela_dia_semana_2(df):
     df['date'] = df['time'].dt.date
     mask2 = (df['time'] > '2016-09-18 00:00:00') & (df['time'] < '2016-10-10 00:00:00')
     df = df.loc[mask2]
-    df['min_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.min)
-    df['max_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.max)
-    df['mediana_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.median)
-    df['media_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean)
-    df['desvio_padrao_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.std)
-    df['desvio_padrao_weekday'].fillna(df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean), inplace=True)
+    df['min_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.min)
+    df['max_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.max)
+    df['mediana_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.median)
+    df['media_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean)
+    df['desvio_padrao_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.std)
+    df['desvio_padrao_weekday'].fillna(df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean), inplace=True)
     
     return df
 
@@ -110,12 +111,12 @@ def adiciona_media_desvio_por_janela_dia_semana_3(df):
     df['date'] = df['time'].dt.date
     mask3 = (df['time'] > '2016-09-18 00:00:00') & (df['time'] < '2016-10-17 00:00:00')
     df = df.loc[mask3]
-    df['min_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.min)
-    df['max_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.max)
-    df['mediana_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.median)
-    df['media_volume_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean)
-    df['desvio_padrao_weekday'] = df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.std)
-    df['desvio_padrao_weekday'].fillna(df.groupby(['am_pm', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean), inplace=True)
+    df['min_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.min)
+    df['max_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.max)
+    df['mediana_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.median)
+    df['media_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean)
+    df['desvio_padrao_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.std)
+    df['desvio_padrao_weekday'].fillna(df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean), inplace=True)
     return df
 
 def adiciona_media_desvio_por_janela_dia_semana_4(df):   
@@ -129,35 +130,85 @@ def adiciona_media_desvio_por_janela_dia_semana_4(df):
     df['media_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean)
     df['desvio_padrao_weekday'] = df.groupby(['time_window', 'week','direction', 'tollgate_id'])["volume"].transform(np.std)
     df['desvio_padrao_weekday'].fillna(df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean), inplace=True)
+    return df
+
+def adiciona_media_desvio_por_janela_dia_semana_5_teste(df1, df2):
+    df_list = [df1, df2]
+    df = pd.concat(df_list, ignore_index=True)
+    df['time'] = pd.to_datetime(df['time'], format = '%Y-%m-%d %H:%M:%S')
+    df['date'] = df['time'].dt.date
+    mask4 = (df['time'] >= '2016-10-18 00:00:00') & (df['time'] < '2016-11-01 00:00:00')
+    df = df.loc[mask4]
+    df['min_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.min)
+    df['max_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.max)
+    df['mediana_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.median)
+    df['media_volume_weekday'] = df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean)
+    df['desvio_padrao_weekday'] = df.groupby(['time_window', 'week','direction', 'tollgate_id'])["volume"].transform(np.std)
+    df['desvio_padrao_weekday'].fillna(df.groupby(['time_window', 'week', 'direction', 'tollgate_id'])["volume"].transform(np.mean), inplace=True)
     
     
     return df
 
 
-# In[331]:
+# In[237]:
 
 
 df_train_a_25 =adiciona_media_desvio_por_janela_dia_semana_1(df_train)
 df_train_a_10 = adiciona_media_desvio_por_janela_dia_semana_2(df_train)
 df_train_a_17 = adiciona_media_desvio_por_janela_dia_semana_3(df_train)
 df_train_a_24 = adiciona_media_desvio_por_janela_dia_semana_4(df_train)
+df_teste_a_24 = adiciona_media_desvio_por_janela_dia_semana_5_teste(df_teste_para_weekday, df_teste)
 
 
-# In[332]:
+# In[238]:
 
 
-df_train_list = [df_train_a_25, df_train_a_10, df_train_a_17, df_train_a_24]
-df_train_para_agregar = pd.concat(df_train_list)
+len_train1 = len(df_train_a_25)
+len_train2 = len(df_train_a_10)
+len_train3 = len(df_train_a_17)
+len_train4 = len(df_train_a_24)
+
+x1 = df_train_a_25.ix[:len_train1 - 1, 21:]
+x2 = df_train_a_10.ix[:len_train2 - 1, 21:]
+x3 = df_train_a_17.ix[:len_train3 - 1, 21:]
+x4 = df_train_a_24.ix[:len_train4 - 1, 21:]
+
+df_train_list = [x1, x2, x3, x4]
+
+#df_train_list = [df_train_a_25[df_train_a_25[['min_volume_weekday']]], df_train_a_10[df_train_a_10['min_volume_weekday']]]
+#df_train_para_agregar = pd.concat(df_train_list)
 
 
-# In[335]:
+# In[239]:
 
 
-df_teste['min_volume_weekday'] = df_train_a_24['min_volume_weekday']
-df_teste['max_volume_weekday'] = df_train_a_24['max_volume_weekday']
-df_teste['mediana_volume_weekday'] = df_train_a_24['mediana_volume_weekday']
-df_teste['media_volume_weekday'] = df_train_a_24['media_volume_weekday']
-df_teste['desvio_padrao_weekday'] = df_train_a_24['desvio_padrao_weekday']
+df_train_para_agregar = pd.concat(df_train_list, ignore_index=True)
+
+
+# In[240]:
+
+
+df_train['media_volume_weekday'] = df_train_para_agregar['media_volume_weekday']
+df_train['min_volume_weekday'] = df_train_para_agregar['min_volume_weekday']
+df_train['max_volume_weekday'] = df_train_para_agregar['max_volume_weekday']
+df_train['desvio_padrao_weekday'] = df_train_para_agregar['desvio_padrao_weekday']
+df_train['mediana_volume_weekday'] = df_train_para_agregar['mediana_volume_weekday']
+
+
+# In[229]:
+
+
+df_train.to_csv('kkk.csv')
+
+
+# In[241]:
+
+
+df_teste['min_volume_weekday'] = df_teste_a_24['min_volume_weekday']
+df_teste['max_volume_weekday'] = df_teste_a_24['max_volume_weekday']
+df_teste['mediana_volume_weekday'] = df_teste_a_24['mediana_volume_weekday']
+df_teste['media_volume_weekday'] = df_teste_a_24['media_volume_weekday']
+df_teste['desvio_padrao_weekday'] = df_teste_a_24['desvio_padrao_weekday']
 
 
 # In[ ]:
@@ -166,7 +217,7 @@ df_teste['desvio_padrao_weekday'] = df_train_a_24['desvio_padrao_weekday']
 #media do volume do dia naquela tollgate naquela direcao
 
 
-# In[336]:
+# In[242]:
 
 
 def medidas_volume_tollgate_direction_am_pm(df):
@@ -179,14 +230,21 @@ def medidas_volume_tollgate_direction_am_pm(df):
     return df
 
 
-# In[337]:
+# In[243]:
 
 
-df_train_para_agregar = medidas_volume_tollgate_direction_am_pm(df_train_para_agregar)
+df_train = medidas_volume_tollgate_direction_am_pm(df_train)
 df_teste = medidas_volume_tollgate_direction_am_pm(df_teste)
 
 
-# In[338]:
+# In[170]:
+
+
+#df_train_para_agregar.to_csv("huehue.csv", index=False)
+df_teste.to_csv("huehue2.csv", index=False)
+
+
+# In[244]:
 
 
 def feature_format():
@@ -195,66 +253,62 @@ def feature_format():
     #volume_train = v_train.groupby(['time_window','tollgate_id','direction','date', 'hour']).size().reset_index().rename(columns = {0:'volume'})
     #volume_test = v_test.groupby(['time_window','tollgate_id','direction','date', 'hour']).size().reset_index().rename(columns = {0:'volume'})
     #print(volume_train)                
-    x = pd.Series(df_train_para_agregar['time_window'].unique())
+    x = pd.Series(df_train['time_window'].unique())
     s = pd.Series(range(len(x)),index = x.values)
-    df_train_para_agregar['window_n'] = df_train_para_agregar['time_window'].map(s)
+    df_train['window_n'] = df_train['time_window'].map(s)
     df_teste['window_n'] = df_teste['time_window'].map(s)
 #        print vol_test.tail()
     #volume_train['weekday'] = v_train['weekday']
     #volume_test['weekday'] = v_test['weekday']
     
-    feature_train = df_train_para_agregar.drop('volume', axis = 1)
+    feature_train = df_train.drop('volume', axis = 1)
     feature_test = df_teste.drop('volume',axis = 1)
-    values_train = df_train_para_agregar['volume'].values
+    values_train = df_train['volume'].values
     values_test = df_teste['volume'].values
     
     return feature_train, feature_test, values_train, values_test
 
 
-# In[339]:
+# In[245]:
 
 
 feature_train, feature_test, values_train, values_test = feature_format()
+feature_train = pd.concat([feature_train, pd.get_dummies(feature_train['tollgate_id'])], axis=1)
+feature_test = pd.concat([feature_test, pd.get_dummies(feature_test['tollgate_id'])], axis=1)
 
 
-# In[340]:
-
-
-feature_train.columns
-
-
-# In[342]:
+# In[246]:
 
 
 regressor_cubic = RandomForestRegressor(n_estimators=500, max_depth=10, oob_score=True)
 
 
-# In[349]:
+# In[270]:
 
 
-regressor_cubic.fit(feature_train[['tollgate_id','direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday']], values_train)
+regressor_cubic.fit(feature_train[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday', 'max_volume_weekday', 'min_volume_weekday', 'mediana_volume_weekday']], values_train)
 
 
-# In[350]:
+# In[271]:
 
 
-y_pred = regressor_cubic.predict(feature_test[['tollgate_id','direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday']])
+y_pred = regressor_cubic.predict(feature_test[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday', 'max_volume_weekday', 'min_volume_weekday', 'mediana_volume_weekday']])
 
 
-# In[354]:
+# In[272]:
 
 
 mean_absolute_percentage_error(values_test, y_pred)
 
 
-# In[352]:
+# In[250]:
 
 
 rmse = sqrt(mean_squared_error(y_pred, values_test))
 rmse
 
 
-# In[117]:
+# In[273]:
 
 
 # Create the parameter grid based on the results of random search 
@@ -280,23 +334,16 @@ grid_search = GridSearchCV(estimator = rf, param_grid = param_grid,
                           cv = 4, n_jobs = -1, verbose = 2)
 
 
-# In[118]:
+# In[274]:
 
 
-grid_search.fit(feature_train[['tollgate_id','direction', 'hour', 'week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia']], values_train)
+grid_search.fit(feature_train[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday', 'max_volume_weekday', 'min_volume_weekday', 'mediana_volume_weekday']], values_train)
 
 
-# In[30]:
+# In[275]:
 
 
 grid_search.best_params_
-
-
-# In[33]:
-
-
-best_grid = grid_search.best_estimator_
-grid_accuracy = evaluate(best_grid, feature_test[['tollgate_id', 'direction','week', 'am_pm', 'volume_anterior', 'volume_anterior_2', 'avg_vol_dia_semana', 'desvio_padrao', 'window_n']], values_test)
 
 
 # In[36]:
@@ -305,31 +352,31 @@ grid_accuracy = evaluate(best_grid, feature_test[['tollgate_id', 'direction','we
 print('Improvement of {:0.2f}%.'.format( 100 * (grid_accuracy - base_accuracy) / base_accuracy))
 
 
-# In[111]:
+# In[277]:
 
 
-regressor_cubic = RandomForestRegressor(n_estimators=500, max_features='sqrt', random_state=10, oob_score=True)
+regressor_cubic = RandomForestRegressor(n_estimators=800, max_features=None, max_depth=10)
 
 
-# In[112]:
+# In[278]:
 
 
-regressor_cubic.fit(feature_train[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia']], values_train)
+regressor_cubic.fit(feature_train[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday', 'max_volume_weekday', 'min_volume_weekday', 'mediana_volume_weekday']], values_train)
 
 
-# In[113]:
+# In[279]:
 
 
-y_pred = regressor_cubic.predict(feature_test[['tollgate_id','direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia']])
+y_pred = regressor_cubic.predict(feature_test[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday', 'max_volume_weekday', 'min_volume_weekday', 'mediana_volume_weekday']])
 
 
-# In[114]:
+# In[280]:
 
 
 mean_absolute_percentage_error(values_test, y_pred)
 
 
-# In[99]:
+# In[281]:
 
 
 rmse = sqrt(mean_squared_error(y_pred, values_test))
@@ -342,40 +389,40 @@ rmse
 ##ADABOOSTING REGRESSOR
 
 
-# In[61]:
+# In[283]:
 
 
 def ADABooster(param_grid, n_jobs): 
     estimator = AdaBoostRegressor() 
-    cv = ShuffleSplit(feature_train[['tollgate_id', 'direction','week', 'am_pm', 'volume_anterior', 'volume_anterior_2', 'avg_vol_dia_semana', 'desvio_padrao', 'window_n']].shape[0], test_size=0.2) 
+    cv = ShuffleSplit(feature_train[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday', 'max_volume_weekday', 'min_volume_weekday', 'mediana_volume_weekday']].shape[0], test_size=0.2) 
     classifier = GridSearchCV(estimator=estimator, cv=4, param_grid=param_grid, n_jobs=n_jobs) 
-    classifier.fit(feature_train[['tollgate_id', 'direction','week', 'am_pm', 'volume_anterior', 'volume_anterior_2', 'avg_vol_dia_semana', 'desvio_padrao', 'window_n']], values_train) 
+    classifier.fit(feature_train[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday', 'max_volume_weekday', 'min_volume_weekday', 'mediana_volume_weekday']], values_train) 
     print ("Best Estimator learned through GridSearch")
     print (classifier.best_estimator_)
     return cv, classifier.best_estimator_
 
 
-# In[62]:
+# In[284]:
 
 
-param_grid={'n_estimators':[100, 300, 500, 800, 1200], 
+param_grid={'n_estimators':[200, 300, 500, 800, 1200, 1500, 1800], 
             'learning_rate': [0.1, 0.05, 0.01, 0.005], 
             'loss':['linear', 'square', 'exponential']}
-n_jobs=4 
+n_jobs=-1 
 
 cv,best_est=ADABooster(param_grid, n_jobs)
 
 
-# In[355]:
+# In[285]:
 
 
-regr = AdaBoostRegressor(n_estimators=1200, learning_rate=0.005, loss='exponential')
+regr = AdaBoostRegressor(n_estimators=1200, learning_rate=0.01, loss='square')
 
 
-# In[356]:
+# In[286]:
 
 
-regr.fit(feature_train[['tollgate_id','direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday']], values_train) 
+regr.fit(feature_train[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday', 'max_volume_weekday', 'min_volume_weekday', 'mediana_volume_weekday']], values_train) 
 
 
 # In[123]:
@@ -384,10 +431,10 @@ regr.fit(feature_train[['tollgate_id','direction','week', 'weekend','volume_ante
 regr.feature_importances_
 
 
-# In[357]:
+# In[287]:
 
 
-y_pred_ada = regr.predict(feature_test[['tollgate_id','direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday']])
+y_pred_ada = regr.predict(feature_test[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday', 'max_volume_weekday', 'min_volume_weekday', 'mediana_volume_weekday']])
 
 
 # In[132]:
@@ -396,13 +443,13 @@ y_pred_ada = regr.predict(feature_test[['tollgate_id','direction','week', 'weeke
 regr.score(feature_train[['tollgate_id','direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia']], values_train)
 
 
-# In[358]:
+# In[288]:
 
 
 mean_absolute_percentage_error(values_test, y_pred_ada)
 
 
-# In[359]:
+# In[289]:
 
 
 rmse = sqrt(mean_squared_error(values_test, y_pred_ada))
@@ -432,7 +479,7 @@ rmse = sqrt(mean_squared_error(values_test, y_pred))
 rmse
 
 
-# In[353]:
+# In[69]:
 
 
 def mean_absolute_percentage_error(y_true, y_pred): 
@@ -473,28 +520,26 @@ y_pred_gbrt=gbrt.predict(feature_test[['tollgate_id', 'direction','week', 'am_pm
 mean_absolute_percentage_error(values_test, y_pred_gbrt)
 
 
-# In[35]:
+# In[290]:
 
 
 def GradientBooster(param_grid, n_jobs): 
     estimator = GradientBoostingRegressor() 
-    cv = ShuffleSplit(feature_train[['tollgate_id', 'direction','week', 'am_pm', 'volume_anterior', 'volume_anterior_2', 'volume_proximo', 'volume_proximo_2', 'avg_vol_dia_semana', 'desvio_padrao', 'window_n']].shape[0], n_iter=10, test_size=0.2) 
+    cv = ShuffleSplit(feature_train[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday', 'max_volume_weekday', 'min_volume_weekday', 'mediana_volume_weekday']].shape[0], test_size=0.2) 
     classifier = GridSearchCV(estimator=estimator, cv=cv, param_grid=param_grid, n_jobs=n_jobs) 
-    classifier.fit(feature_train[['tollgate_id', 'direction','week', 'am_pm', 'volume_anterior', 'volume_anterior_2', 'volume_proximo', 'volume_proximo_2', 'avg_vol_dia_semana', 'desvio_padrao', 'window_n']], values_train) 
+    classifier.fit(feature_train[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday', 'max_volume_weekday', 'min_volume_weekday', 'mediana_volume_weekday']], values_train) 
     print ("Best Estimator learned through GridSearch")
     print (classifier.best_estimator_)
     return cv, classifier.best_estimator_
 
 
-# In[36]:
+# In[ ]:
 
 
-param_grid={'n_estimators':[100], 
-            'learning_rate': [0.1], 
-            'max_depth':[6], 
-            'min_samples_leaf':[3],
-            'max_features':[1.0]}
-n_jobs=4 
+param_grid={'n_estimators':[200, 300, 500, 800, 1200, 1500, 1800], 
+            'max_depth':[int(x) for x in np.linspace(10, 110, num = 11)],
+            'max_features': [None]}
+n_jobs=-1 
 
 cv,best_est=GradientBooster(param_grid, n_jobs)
 
@@ -559,7 +604,7 @@ rmse = sqrt(mean_squared_error(values_test, y_pred_gbrt_oficial))
 rmse
 
 
-# In[364]:
+# In[251]:
 
 
 
@@ -569,20 +614,20 @@ regressor_cubic_g = GradientBoostingRegressor(n_estimators=250, learning_rate=0.
                                                 random_state=10, loss="lad")
 
 
-# In[365]:
+# In[260]:
 
 
-regressor_cubic_g.fit(feature_train[['tollgate_id','direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday']], values_train)
-yhat = regressor_cubic_g.predict(feature_test[['tollgate_id','direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm', 'media_volume_weekday', 'desvio_padrao_weekday']])
+regressor_cubic_g.fit(feature_train[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm']], values_train)
+yhat = regressor_cubic_g.predict(feature_test[[1,2,3,'direction','week', 'weekend','volume_anterior', 'volume_anterior_2', 'am_pm', 'window_n', 'desvio_padrao_hora_dia', 'mediana_volume_hora_dia', 'max_volume_hora_dia', 'media_volume_hora_dia', 'min_volume_hora_dia', 'media_volume_dia_am_pm', 'max_volume_dia_am_pm', 'mediana_volume_dia_am_pm', 'min_volume_dia_am_pm', 'desvio_padrao_am_pm' ]])
 
 
-# In[366]:
+# In[261]:
 
 
 mean_absolute_percentage_error(values_test, yhat)
 
 
-# In[367]:
+# In[262]:
 
 
 rmse = sqrt(mean_squared_error(values_test, yhat))
